@@ -1,7 +1,22 @@
 library-autocadio-dotnet
 ========================
 
-Library with helper methods to perform tasks related to AutoCAD IO 
+Library with helper methods to perform tasks related to AutoCAD IO
+
+How to build :
+
+1) Open the solution file in Visual Studio 2012
+
+2) Add service reference to the following endpoint: 
+https://developer.api.autodesk.com/autocad.io/v1
+
+![Picture](https://github.com/Developer-Autodesk/library-dotnet-autocad.io/blob/master/assets/1.png)
+ 
+3) Add the following NuGet packages to the project:
+ 
+![Picture](https://github.com/Developer-Autodesk/library-dotnet-autocad.io/blob/master/assets/2.png)
+ 
+4) Build the library project.
 
 Following methods are provided by this library :
 
@@ -139,3 +154,12 @@ Following methods are provided by this library :
 		Bucket name in Amazon S3 to be used for uploading drawing
 		</summary>
 	</member>
+	
+
+Examples on using this library can be found in the following samples :
+
+https://github.com/Developer-Autodesk/workflow-winform-autocad.io
+
+https://github.com/Developer-Autodesk/workflow-windowsservice-autocad.io
+
+https://github.com/Developer-Autodesk/workflow-aspdotnet-autocad.io
