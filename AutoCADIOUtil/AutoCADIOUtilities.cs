@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Collections.ObjectModel;
 
 using Newtonsoft.Json;
 
@@ -13,9 +14,9 @@ namespace Autodesk
 {
     public class AcadIOUtils
     {
-        private static AcadIO.Container container = null;
+        private static AIO.Operations.Container container = null;
         private static String _accessToken = String.Empty;
-        private static RestSharp.RestClient restClient = new RestSharp.RestClient("https://developer.api.autodesk.com/autocad.io/v1/");
+        private static RestSharp.RestClient restClient = new RestSharp.RestClient("https://developer.api.autodesk.com/autocad.io/v2/");
 
         /// <summary>
         /// Does setup of AutoCAD IO. 
@@ -31,8 +32,8 @@ namespace Autodesk
                 String clientId = autocadioclientid;
                 String clientSecret = autocadioclientsecret;
 
-                Uri uri = new Uri("https://developer.api.autodesk.com/autocad.io/v1/");
-                container = new AcadIO.Container(uri);
+                Uri uri = new Uri("https://developer.api.autodesk.com/autocad.io/us-east/v2/");
+                container = new AIO.Operations.Container(uri);
                 container.Format.UseJson();
 
                 using (var client = new HttpClient())
@@ -55,7 +56,7 @@ namespace Autodesk
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine(String.Format("Error while connecting to https://developer.api.autodesk.com/autocad.io/v1/", ex.Message));
+                Console.WriteLine(String.Format("Error while connecting to https://developer.api.autodesk.com/autocad.io/v2/", ex.Message));
                 container = null;
                 throw;
             }
@@ -70,11 +71,10 @@ namespace Autodesk
             Dictionary<String, String> activityDetails = new Dictionary<string, string>();
             try
             {
-                foreach (AcadIO.Activity act in container.Activities)
+                foreach (AIO.ACES.Models.Activity act in container.Activities)
                 {
-                    String userId = act.UserId;
                     String activityId = act.Id;
-                    AcadIO.Instruction activityInstruction = act.Instruction;
+                    AIO.ACES.Models.Instruction activityInstruction = act.Instruction;
                     activityDetails.Add(String.Format("{0}", activityId), act.Instruction.Script);
                 }
             }
@@ -94,9 +94,8 @@ namespace Autodesk
             Dictionary<String, String> packageDetails = new Dictionary<string, string>();
             try
             {
-                foreach (AcadIO.AppPackage appPackage in container.AppPackages)
+                foreach (AIO.ACES.Models.AppPackage appPackage in container.AppPackages)
                 {
-                    String userId = appPackage.UserId;
                     String packageId = appPackage.Id;
                     packageDetails.Add(String.Format("{0}", packageId), appPackage.Resource);
                 }
@@ -113,8 +112,9 @@ namespace Autodesk
         /// </summary>
         /// <param name="activityId">Unique name identifying the activity</param>
         /// <param name="script">AutoCAD Script that is associated with the activity</param>
+        /// <param name="linkedPackages">Package Ids to link with the new activity being created</param>
         /// <returns>true if activity was created, false otherwise</returns>
-        public static bool CreateActivity(String activityId, String script)
+        public static bool CreateActivity(String activityId, String script, ObservableCollection<String> linkedPackages)
         {
             if (String.IsNullOrEmpty(activityId) || String.IsNullOrEmpty(script))
                 return false;
@@ -122,7 +122,7 @@ namespace Autodesk
             bool created = false;
             try
             {
-                foreach (AcadIO.Activity act1 in container.Activities)
+                foreach (AIO.ACES.Models.Activity act1 in container.Activities)
                 {
                     if (activityId.Equals(act1.Id))
                     {
@@ -149,21 +149,21 @@ namespace Autodesk
                 }
 
                 // Create a new activity
-                AcadIO.Activity act = new AcadIO.Activity()
+                AIO.ACES.Models.Activity act = new AIO.ACES.Models.Activity()
                 {
-                    UserId = "", // User id will be our AutoCADIO client Id
                     Id = activityId,
                     Version = 1,
-                    Instruction = new AcadIO.Instruction()
+                    Instruction = new AIO.ACES.Models.Instruction()
                     {
                         Script = script
                     },
-                    Parameters = new AcadIO.Parameters()
+                    Parameters = new AIO.ACES.Models.Parameters()
                     {
-                        InputParameters = { new AcadIO.Parameter() { Name = "HostDwg", LocalFileName = "$(HostDwg)" } },
-                        OutputParameters = { new AcadIO.Parameter() { Name = "Result", LocalFileName = resultLocalFileName } }
+                        InputParameters = { new AIO.ACES.Models.Parameter() { Name = "HostDwg", LocalFileName = "$(HostDwg)" } },
+                        OutputParameters = { new AIO.ACES.Models.Parameter() { Name = "Result", LocalFileName = resultLocalFileName } }
                     },
-                    RequiredEngineVersion = "20.0"
+                    RequiredEngineVersion = "20.0",
+                    AppPackages = linkedPackages
                 };
                 container.AddToActivities(act);
                 container.SaveChanges();
@@ -189,23 +189,18 @@ namespace Autodesk
 
             try
             {
-                foreach (AcadIO.Activity act1 in container.Activities)
+                foreach (AIO.ACES.Models.Activity act1 in container.Activities)
                 {
                     if (activityId.Equals(act1.Id))
                     {
-                        if (act1.UserId.Equals("Shared"))
-                            return false; // Dont attempt deleting the shared ones. Those are provided by AutoCAD IO.
-
-                        RestSharp.RestRequest req = new RestSharp.RestRequest();
-                        req.Resource = String.Format("Activities(UserId='{0}',Id='{1}')", act1.UserId, act1.Id);
-                        req.Method = RestSharp.Method.DELETE;
-                        req.AddParameter("Authorization", _accessToken, RestSharp.ParameterType.HttpHeader);
-
-                        RestSharp.IRestResponse resp = restClient.Execute(req);
-                        String response = resp.Content;
-                        if (resp.ResponseStatus == RestSharp.ResponseStatus.Completed)
-                            deleted = true;
-
+                        UriBuilder builder = new UriBuilder(container.BaseUri);
+                        builder.Path += String.Format("Activities('{0}')", act1.Id);
+                        System.Net.HttpWebRequest httpRequest = System.Net.HttpWebRequest.Create(builder.Uri) as System.Net.HttpWebRequest;
+                        httpRequest.Method = "DELETE";
+                        httpRequest.Headers.Add("Authorization", _accessToken);
+                        System.Net.HttpWebResponse response = httpRequest.GetResponse() as System.Net.HttpWebResponse;
+                        //When Delete succeeds, it returns “204 No Content”. Else, you will get other error status.
+                        deleted = (response.StatusCode == System.Net.HttpStatusCode.NoContent);
                         break;
                     }
                 }
@@ -248,16 +243,16 @@ namespace Autodesk
 
             try
             {
-                foreach (AcadIO.Activity act1 in container.Activities)
+                foreach (AIO.ACES.Models.Activity act1 in container.Activities)
                 {
                     if (activityId.Equals(act1.Id))
                     {
                         // Activity already exists 
-                        var ins = new AcadIO.Instruction();
+                        var ins = new AIO.ACES.Models.Instruction();
                         ins.Script = script;
                         act1.Instruction = ins;
                         container.UpdateObject(act1);
-                        container.SaveChanges(System.Data.Services.Client.SaveChangesOptions.PatchOnUpdate);
+                        container.SaveChanges(Microsoft.OData.Client.SaveChangesOptions.ReplaceOnUpdate);
                         activityUpdated = true;
                         break;
                     }
@@ -281,56 +276,43 @@ namespace Autodesk
         {
             try
             {
-                String userId = String.Empty;
-                foreach (AcadIO.Activity act1 in container.Activities)
+                AIO.ACES.Models.WorkItem wi = new AIO.ACES.Models.WorkItem()
                 {
-                    if (activityId.Equals(act1.Id))
-                    {
-                        // Found the activity using which a WorkItem is to be submitted to AutoCAD IO
-                        userId = act1.UserId;
-                        break;
-                    }
-                }
-
-                AcadIO.WorkItem wi = new AcadIO.WorkItem()
-                {
-                    UserId = "",
                     Id = "",
-                    Arguments = new AcadIO.Arguments(),
-                    Version = 1,
-                    ActivityId = new AcadIO.EntityId() { UserId = userId, Id = activityId }
+                    Arguments = new AIO.ACES.Models.Arguments(),
+                    ActivityId = activityId 
                 };
 
                 // Drawing
-                wi.Arguments.InputArguments.Add(new AcadIO.Argument()
+                wi.Arguments.InputArguments.Add(new AIO.ACES.Models.Argument()
                 {
                     Name = "HostDwg",
                     Resource = hostDwgS3Url,
-                    StorageProvider = "Generic",
-                    HttpVerb = "GET"
+                    StorageProvider = AIO.ACES.Models.StorageProvider.Generic,
+                    HttpVerb = AIO.ACES.Models.HttpVerbType.GET
                 });
 
-                wi.Arguments.OutputArguments.Add(new AcadIO.Argument()
+                wi.Arguments.OutputArguments.Add(new AIO.ACES.Models.Argument()
                 {
                     Name = "Result",
                     Resource = null,
-                    StorageProvider = "Generic",
-                    HttpVerb = "POST",
+                    StorageProvider = AIO.ACES.Models.StorageProvider.Generic,
+                    HttpVerb = AIO.ACES.Models.HttpVerbType.POST
                 });
 
-                container.MergeOption = System.Data.Services.Client.MergeOption.OverwriteChanges;
+                container.MergeOption = Microsoft.OData.Client.MergeOption.OverwriteChanges;
                 container.AddToWorkItems(wi);
                 container.SaveChanges();
 
-                Console.WriteLine("Submitted WorkItem. WorkItem UserId = {0}, WorkItem Id= {1}", wi.UserId, wi.Id);
+                Console.WriteLine("Submitted WorkItem. WorkItem Id= {0}", wi.Id);
                 Console.WriteLine("Checking WorkItem status...");
 
                 do
                 {
                     System.Threading.Thread.Sleep(5000);
-                    wi = container.WorkItems.Where(p => p.UserId == wi.UserId && p.Id == wi.Id).SingleOrDefault();
+                    wi = container.WorkItems.Where(p => p.Id == wi.Id).SingleOrDefault();
                     Console.WriteLine("WorkItem Status : {0}", wi.Status);
-                } while (wi.Status == "Pending" || wi.Status == "InProgress");
+                } while (wi.Status == AIO.ACES.Models.ExecutionStatus.Pending || wi.Status == AIO.ACES.Models.ExecutionStatus.InProgress);
 
                 Console.WriteLine("WorkItem Status : {0}", wi.Status);
                 Console.WriteLine("The result is downloadable at {0}", wi.Arguments.OutputArguments.First().Resource);
@@ -415,9 +397,9 @@ namespace Autodesk
             if (String.IsNullOrEmpty(packageId) || !File.Exists(packageZipFilePath))
                 return false;
 
-            AcadIO.AppPackage appPackage = null;
+            AIO.ACES.Models.AppPackage appPackage = null;
 
-            foreach (AcadIO.AppPackage pack in container.AppPackages)
+            foreach (AIO.ACES.Models.AppPackage pack in container.AppPackages)
             {
                 if (pack.Id.Equals(packageId))
                 {
@@ -432,16 +414,15 @@ namespace Autodesk
                 {
                     // First step -- query for the url to upload the AppPackage file
                     UriBuilder builder = new UriBuilder(container.BaseUri);
-                    builder.Path += "AppPackages/GenerateUploadUrl";
-                    var url = container.Execute<string>(builder.Uri, "POST", true, null).First();
+                    builder.Path += "AppPackages/Operations.GetUploadUrl";
+                    var url = container.Execute<string>(builder.Uri, "GET", true, null).First();
 
                     // Second step -- upload AppPackage file
                     if (GeneralUtils.UploadObject(url, packageZipFilePath))
                     {
                         // third step -- after upload, create the AppPackage
-                        appPackage = new AcadIO.AppPackage()
+                        appPackage = new AIO.ACES.Models.AppPackage()
                         {
-                            UserId = "", // Will automatically assigned by AutoCAD IO 
                             Id = packageId,
                             Version = 1,
                             RequiredEngineVersion = "20.0",
@@ -461,43 +442,6 @@ namespace Autodesk
         }
 
         /// <summary>
-        /// Links an appPakage with an existing activity
-        /// </summary>
-        /// <param name="activityId">Unique name identifying the activity to be linked with an AppPackage. Activity with this name must already exist.</param>
-        /// <param name="packageId">Unique name identifying the package to be linked with the activity. AppPackage with this name must already exist.</param>
-        /// <returns>true if appPackage was linked with the activity, false otherwise</returns>
-        public static bool LinkAppPackage2Activity(String activityId, String packageId)
-        {
-            if (String.IsNullOrEmpty(activityId) || String.IsNullOrEmpty(packageId))
-                return false;
-
-            //Link the activity with the app package
-            foreach (AcadIO.Activity act in container.Activities)
-            {
-                if (activityId.Equals(act.Id))
-                {
-                    foreach (AcadIO.AppPackage pack in container.AppPackages)
-                    {
-                        if (packageId.Equals(pack.Id))
-                        {
-                            try
-                            {
-                                container.AddLink(act, "AppPackages", pack);
-                                container.SaveChanges();
-                                return true;
-                            }
-                            catch (System.Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Removes an existing appPackage
         /// </summary>
         /// <param name="activityId">Unique name identifying the appPackage to be removed. appPackage with this name must already exist.</param>
@@ -511,20 +455,18 @@ namespace Autodesk
             bool deleted = false;
             try
             {
-                foreach (AcadIO.AppPackage pack in container.AppPackages)
+                foreach (AIO.ACES.Models.AppPackage pack in container.AppPackages)
                 {
                     if (packageId.Equals(pack.Id))
                     {
-                        RestSharp.RestRequest req = new RestSharp.RestRequest();
-                        req.Resource = String.Format("AppPackages(UserId='{0}',Id='{1}')", pack.UserId, pack.Id);
-                        req.Method = RestSharp.Method.DELETE;
-                        req.AddParameter("Authorization", _accessToken, RestSharp.ParameterType.HttpHeader);
-
-                        RestSharp.IRestResponse resp = restClient.Execute(req);
-                        String response = resp.Content;
-                        if (resp.ResponseStatus == RestSharp.ResponseStatus.Completed)
-                            deleted = true;
-
+                        UriBuilder builder = new UriBuilder(container.BaseUri);
+                        builder.Path += String.Format("AppPackages('{0}')", packageId);
+                        System.Net.HttpWebRequest httpRequest = System.Net.HttpWebRequest.Create(builder.Uri) as System.Net.HttpWebRequest;
+                        httpRequest.Method = "DELETE";
+                        httpRequest.Headers.Add("Authorization", _accessToken);
+                        System.Net.HttpWebResponse response = httpRequest.GetResponse() as System.Net.HttpWebResponse;
+                        //When Delete succeeds, it returns “204 No Content”. Else, you will get other error status.
+                        deleted = (response.StatusCode == System.Net.HttpStatusCode.NoContent);
                         break;
                     }
                 }
