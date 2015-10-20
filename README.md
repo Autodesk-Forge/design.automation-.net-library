@@ -1,19 +1,16 @@
 library-autocadio-dotnet
 ========================
 
-Library with helper methods to perform tasks related to AutoCAD IO
+Library with helper methods to perform tasks related to AutoCAD IO V2
 
 How to build :
 
 1) Open the solution file in Visual Studio 2012
 
-2) Add service reference to the following endpoint: 
-https://developer.api.autodesk.com/autocad.io/v1
+2) Add the following NuGet packages to the project:
+ 
+ "OData V4 Client" and "Newtonsoft.JSON"
 
-![Picture](https://github.com/Developer-Autodesk/library-dotnet-autocad.io/blob/master/assets/1.png)
- 
-3) Add the following NuGet packages to the project:
- 
 ![Picture](https://github.com/Developer-Autodesk/library-dotnet-autocad.io/blob/master/assets/2.png)
  
 4) Build the library project.
@@ -50,6 +47,7 @@ Following methods are provided by this library :
 		</summary>
 		<param name="activityId">Unique name identifying the activity</param>
 		<param name="script">AutoCAD Script that is associated with the activity</param>
+		<param name="linkedPackages">Package Ids to link with the new activity being created</param>
 		<returns>true if activity was created, false otherwise</returns>
 	</member>
 	
@@ -95,15 +93,6 @@ Following methods are provided by this library :
 		<param name="packageId">Unique name identifying the appPackage to be created. AppPackage must not already exist with the same name.</param>
 		<param name="packageZipFilePath">Local path to the autoloader bundle after it has been zipped.</param>
 		<returns>true if appPackage was created, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.LinkAppPackage2Activity(System.String,System.String)">
-		<summary>
-		Links an appPakage with an existing activity
-		</summary>
-		<param name="activityId">Unique name identifying the activity to be linked with an AppPackage. Activity with this name must already exist.</param>
-		<param name="packageId">Unique name identifying the package to be linked with the activity. AppPackage with this name must already exist.</param>
-		<returns>true if appPackage was linked with the activity, false otherwise</returns>
 	</member>
 	
 	<member name="Autodesk.AcadIOUtils.DeletePackage(System.String)">
