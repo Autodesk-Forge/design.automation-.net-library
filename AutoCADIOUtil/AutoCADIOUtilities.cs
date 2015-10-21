@@ -47,7 +47,6 @@ namespace Autodesk
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var resValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
                     _accessToken = resValues["token_type"] + " " + resValues["access_token"];
-
                     if (!string.IsNullOrEmpty(_accessToken))
                     {
                         container.SendingRequest2 += (sender, e) => e.RequestMessage.SetHeader("Authorization", _accessToken);
@@ -247,12 +246,11 @@ namespace Autodesk
                 {
                     if (activityId.Equals(act1.Id))
                     {
-                        // Activity already exists 
                         var ins = new AIO.ACES.Models.Instruction();
                         ins.Script = script;
                         act1.Instruction = ins;
                         container.UpdateObject(act1);
-                        container.SaveChanges(Microsoft.OData.Client.SaveChangesOptions.ReplaceOnUpdate);
+                        container.SaveChanges(); 
                         activityUpdated = true;
                         break;
                     }
@@ -262,7 +260,6 @@ namespace Autodesk
             {
                 Console.WriteLine(ex.Message);
             }
-
             return activityUpdated;
         }
 
