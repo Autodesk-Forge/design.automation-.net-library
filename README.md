@@ -1,154 +1,25 @@
-library-autocadio-dotnet
+Design Automation .NET Library
 ========================
+(Formely AutoCAD I/O)
 
-Library with helper methods to perform tasks related to AutoCAD IO V2
+[![.net](https://img.shields.io/badge/.net-4.5-green.svg)](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
+[![odata](https://img.shields.io/badge/odata-4.0-yellow.svg)](http://www.odata.org/documentation/)
+[![ver](https://img.shields.io/badge/Design%20Automation%20API-2.0-blue.svg)](https://developer.autodesk.com/api/autocadio/v2/)
+[![visual studio](https://img.shields.io/badge/Visual%20Studio-2012%7C2013-brightgreen.svg)](https://www.visualstudio.com/)
+[![License](http://img.shields.io/:license-mit-red.svg)](http://opensource.org/licenses/MIT)
 
-How to build :
+##Description
+This is a library with helper methods to perform tasks related to Design Automation. It also provides the some workflows of AWS S3 such as uploading objects to bucket.
 
-1) Open the solution file in Visual Studio 2012
+##Dependencies
+* Visual Studio 2012. 2013 or 2015 should be also fine, but has not yet been tested.
 
-2) Add the following NuGet packages to the project:
- 
- "OData V4 Client" and "Newtonsoft.JSON"
-
-![Picture](https://github.com/Developer-Autodesk/library-dotnet-autocad.io/blob/master/assets/2.png)
- 
-4) Build the library project.
-
-Following methods are provided by this library :
-
-	<member name="Autodesk.AcadIOUtils.SetupAutoCADIOContainer(System.String,System.String)">
-		<summary>
-		Does setup of AutoCAD IO. 
-		This method will need to be invoked once before any other methods of this
-		utility class can be invoked.
-		</summary>
-		<param name="autocadioclientid">AutoCAD IO Client ID - can be obtained from developer.autodesk.com</param>
-		<param name="autocadioclientsecret">AutoCAD IO Client Secret - can be obtained from developer.autodesk.com</param>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.GetActivityDetails">
-		<summary>
-		Get the activity name and script associated with the activities
-		</summary>
-		<returns>Key Value pair of the activity names and script associated with each activity</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.GetAppPackageDetails">
-		<summary>
-		Get the appPackage name and resource associated with the appPackages
-		</summary>
-		<returns>Key Value pair of the appPackage name and resource url associated with each appPackage</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.CreateActivity(System.String,System.String)">
-		<summary>
-		Creates a new activity
-		</summary>
-		<param name="activityId">Unique name identifying the activity</param>
-		<param name="script">AutoCAD Script that is associated with the activity</param>
-		<param name="linkedPackages">Package Ids to link with the new activity being created</param>
-		<returns>true if activity was created, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.DeleteActivity(System.String)">
-		<summary>
-		Removes an existing activity
-		</summary>
-		<param name="activityId">Unique name identifying the activity to be removed. Activity with this name must already exist.</param>
-		<returns>true if activity was removed, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.UpdateActivity(System.String,System.String)">
-		<summary>
-		Updates an existing activity script
-		</summary>
-		<param name="activityId">Unique name identifying the activity to be updated. Activity with this name must already exist.</param>
-		<param name="script">Script to replace the existing one associated with the activity</param>
-		<returns>true if activity was updated, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.SubmitWorkItem(System.String,System.String)">
-		<summary>
-		Creates a new WorkItem
-		</summary>
-		<param name="activityId">ActivityId that is associated with the new workItem</param>
-		<param name="hostDwgS3Url">Url of the drawing after it has been uploaded to Amazon S3</param>
-		<returns>true if WorkItem was created, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.CreateAppPackageFromBundle(System.String,System.String)">
-		<summary>
-		Creates a new AppPackage 
-		</summary>
-		<param name="packageId">Unique name identifying the appPackage to be created. AppPackage must not already exist with the same name.</param>
-		<param name="bundleFolderPath">Local folder path to the autoloader bundle. This path must contain the PackageContents.xml</param>
-		<returns>true if appPackage was created, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.CreateAppPackageFromZip(System.String,System.String)">
-		<summary>
-		Creates a new AppPackage
-		</summary>
-		<param name="packageId">Unique name identifying the appPackage to be created. AppPackage must not already exist with the same name.</param>
-		<param name="packageZipFilePath">Local path to the autoloader bundle after it has been zipped.</param>
-		<returns>true if appPackage was created, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.AcadIOUtils.DeletePackage(System.String)">
-		<summary>
-		Removes an existing appPackage
-		</summary>
-		<param name="activityId">Unique name identifying the appPackage to be removed. appPackage with this name must already exist.</param>
-		<returns>true if appPackage was removed, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.GeneralUtils.FindListedCommands(System.String,System.Collections.Specialized.StringCollection@,System.Collections.Specialized.StringCollection@)">
-		<summary>
-		Identifies the commands exposed by a bundle represented by the "packageZipFilePath"
-		</summary>
-		<param name="packageZipFilePath">Path to the zip file of the bundle</param>
-		<param name="localCommands">Returns the local commands identified from packagecontents.xml</param>
-		<param name="globalCommands">Returns the global commands identified from packagecontents.xml</param>
-	</member>
-	
-	<member name="Autodesk.GeneralUtils.UploadObject(System.String,System.String)">
-		<summary>
-		Uploads the contents from "filePath" to the url provided
-		</summary>
-		<param name="url">Upload url</param>
-		<param name="filePath">Local file path</param>
-		<returns>true if uploaded, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.GeneralUtils.Download(System.String,System.String@)">
-		<summary>
-		Downloads and saves the contents from the url in a local file
-		</summary>
-		<param name="url">Download url</param>
-		<param name="localFilePath">Local file path to which the contents were saved</param>
-		<returns>true if downloaded, false otherwise</returns>
-	</member>
-	
-	<member name="Autodesk.GeneralUtils.UploadDrawingToS3(System.String)">
-		<summary>
-		Uploads the drawing to Amazon S3
-		</summary>
-		<param name="dwgFilePath"></param>
-		<returns>Presigned Url of the uploaded drawing file in Amazon S3</returns>
-	</member>
-	
-	<member name="Autodesk.GeneralUtils.S3BucketName">
-		<summary>
-		Bucket name in Amazon S3 to be used for uploading drawing
-		</summary>
-	</member>
-	
-
-Examples on using this library can be found in the following samples :
-
-https://github.com/Developer-Autodesk/workflow-winform-autocad.io
-
-https://github.com/Developer-Autodesk/workflow-windowsservice-autocad.io
-
-https://github.com/Developer-Autodesk/workflow-aspdotnet-autocad.io
+##Setup/Usage Instructions
+* Open the PlotToPDFService sample project in Visual Studio 2012
+* Restore the packages of the project by [NuGet](https://www.nuget.org/). The simplest way is to Projects tab >> Enable NuGet Package Restore. Then right click the project>>"Manage NuGet Packages for Solution" >> "Restore" (top right of dialog)
+* Add other missing references
+* Build the library project to generate the class dll.
+* Test with other client projects such as 
+  * [design.automation-windows-services-sample](https://github.com/Developer-Autodesk/design.automation-windows-services-sample)
+  * [design.automation-workflow-winform-sample] (https://github.com/Developer-Autodesk/design.automation-workflow-winform-sample)
+  
