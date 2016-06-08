@@ -23,3 +23,5 @@ This is a library with helper methods to perform tasks related to Design Automat
   * [design.automation-windows-services-sample](https://github.com/Developer-Autodesk/design.automation-windows-services-sample)
   * [design.automation-workflow-winform-sample] (https://github.com/Developer-Autodesk/design.automation-workflow-winform-sample)
   
+* important tip: be sure to connect to the endpoint which is the same region of your bucket!  line 168 of [GeneralUtilities.cs](./AutoCADIOUtil/GeneralUtilities.cs)
+  ![Picture](./readme/AWS-region.png)
