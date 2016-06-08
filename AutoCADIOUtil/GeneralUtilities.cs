@@ -1,4 +1,4 @@
-﻿using System;
+﻿fendusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -164,7 +164,8 @@ namespace Autodesk
 
                 String keyName = System.IO.Path.GetFileName(dwgFilePath);
 
-                using (Amazon.S3.IAmazonS3 client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.APSoutheast1))
+                //be sure to connect to the endpoint which is the same region of your bucket!
+                using (Amazon.S3.IAmazonS3 client = new Amazon.S3.AmazonS3Client(Amazon.RegionEndpoint.USWest2))
                 {
                     Amazon.S3.Model.PutObjectRequest putRequest1 = new Amazon.S3.Model.PutObjectRequest
                     {
