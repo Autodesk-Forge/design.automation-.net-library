@@ -9,7 +9,9 @@ Design Automation .NET Library
 [![License](http://img.shields.io/:license-mit-red.svg)](http://opensource.org/licenses/MIT)
 
 ##Description
-This is a library with helper methods to perform tasks related to Design Automation. It also provides the some workflows of AWS S3 such as uploading objects to bucket.
+This is a library with helper methods to perform tasks related to Design Automation. It also provides the some workflows of AWS S3 such as uploading objects to bucket. 
+
+See full [Design Automation API v2 Documentation](https://developer.autodesk.com/en/docs/design-automation/v2/overview/)
 
 ##Dependencies
 * Visual Studio 2012. 2013 or 2015 should be also fine, but has not yet been tested.
@@ -21,7 +23,7 @@ This is a library with helper methods to perform tasks related to Design Automat
 * Build the library project to generate the class dll.
 * Test with other client projects such as 
   * [design.automation-windows-services-sample](https://github.com/Developer-Autodesk/design.automation-windows-services-sample)
-  * [design.automation-workflow-winform-sample] (https://github.com/Developer-Autodesk/design.automation-workflow-winform-sample)
+  * [design.automation-workflow-winform-sample](https://github.com/Developer-Autodesk/design.automation-workflow-winform-sample)
   
 * important tip: be sure to connect to the endpoint which is the same region of your bucket!  line 168 of [GeneralUtilities.cs](./AutoCADIOUtil/GeneralUtilities.cs)
   ![Picture](./readme/AWS-region.png)
