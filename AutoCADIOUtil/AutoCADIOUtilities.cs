@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,11 +12,22 @@ using Newtonsoft.Json;
 
 namespace Autodesk
 {
+    class ForgeDesignAutoSrv
+    {
+        public static string containerUrl = "https://developer.api.autodesk.com/autocad.io/us-east/v2/";
+
+        //check with developer portal of Forge if any endpoints are updated when you test this sample
+        //https://developer.autodesk.com
+
+        public static string forgeServiceBaseUrl = "https://developer.api.autodesk.com";
+        public static string autenticationUrl = forgeServiceBaseUrl + "/authentication/v1/authenticate";
+    }
+
     public class AcadIOUtils
     {
         private static AIO.Operations.Container container = null;
         private static String _accessToken = String.Empty;
-        private static RestSharp.RestClient restClient = new RestSharp.RestClient("https://developer.api.autodesk.com/autocad.io/v2/");
+        private static RestSharp.RestClient restClient = new RestSharp.RestClient(ForgeDesignAutoSrv.containerUrl);
 
         /// <summary>
         /// Does setup of AutoCAD IO. 
@@ -32,7 +43,7 @@ namespace Autodesk
                 String clientId = autocadioclientid;
                 String clientSecret = autocadioclientsecret;
 
-                Uri uri = new Uri("https://developer.api.autodesk.com/autocad.io/us-east/v2/");
+                Uri uri = new Uri(ForgeDesignAutoSrv.containerUrl);
                 container = new AIO.Operations.Container(uri);
                 container.Format.UseJson();
 
@@ -43,8 +54,9 @@ namespace Autodesk
                     values.Add(new KeyValuePair<string, string>("client_secret", clientSecret));
                     values.Add(new KeyValuePair<string, string>("grant_type", "client_credentials"));
                     values.Add(new KeyValuePair<string, string>("scope", "code:all")); 
+
                     var requestContent = new FormUrlEncodedContent(values);
-                    var response = client.PostAsync("https://developer.api.autodesk.com/authentication/v1/authenticate", requestContent).Result;
+                    var response = client.PostAsync(ForgeDesignAutoSrv.autenticationUrl, requestContent).Result;
                     var responseContent = response.Content.ReadAsStringAsync().Result;
                     var resValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
                     _accessToken = resValues["token_type"] + " " + resValues["access_token"];
