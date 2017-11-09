@@ -28,4 +28,4 @@ See full [Design Automation API v2 Documentation](https://developer.autodesk.com
   * [design.automation-workflow-winform-sample](https://github.com/Developer-Autodesk/design.automation-workflow-winform-sample)
   
 * important tip: be sure to connect to the endpoint which is the same region of your bucket!  line 168 of [GeneralUtilities.cs](./AutoCADIOUtil/GeneralUtilities.cs)
-  ![Picture](./readme/AWS-region.png)
+  ![thumbnail](./readme/AWS-region.png)
