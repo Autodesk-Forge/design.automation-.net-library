@@ -45,6 +45,8 @@ This is an auxiliary library with helper methods to perform tasks related to Des
 * [ Intro to Design Automation API Video](https://www.youtube.com/watch?v=GWsJM344CJE&t=107s)
 * [Working with Amazon S3 Buckets](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html)  
  
+## Known Issues
+* as of writing, Design Automation of Forge is released with version 2. Odata is used with .NET project. In futher version, OData might not be used. 
 
 ## License
 
