@@ -36,7 +36,7 @@ This is an auxiliary library with helper methods to perform tasks related to Des
   * [design.automation-windows-services-sample](https://github.com/Autodesk-Forge/design.automation-windows-services-sample)
   * [design.automation-workflow-winform-sample](https://github.com/Autodesk-Forge/design.automation-workflow-winform-sample)
   
-##Troubleshooting
+## Troubleshooting
 * be sure to connect to the endpoint which is the same region of your S3 bucket!  line 168 of [GeneralUtilities.cs](./AutoCADIOUtil/GeneralUtilities.cs)
   ![thumbnail](./help/AWS-region.png) 
 
