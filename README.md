@@ -29,7 +29,7 @@ This is an auxiliary library with helper methods to perform tasks related to Des
 ## Running locally  
 * Open the project. Restore the packages of the project by [NuGet](https://www.nuget.org/). The simplest way is
   * VS2012: Projects tab >> Enable NuGet Package Restore. Then right click the project>>"Manage NuGet Packages for Solution" >> "Restore" (top right of dialog)
-  * VS2013/VS2015:  right click the project>>"Manage NuGet Packages for Solution" >> "Restore" (top right of dialog)
+  * VS2013/VS2015/2017:  right click the project>>"Manage NuGet Packages for Solution" >> "Restore" (top right of dialog)
 * Add other missing references
 * Build the library project to generate the dll.
 * Test with other client projects such as 
